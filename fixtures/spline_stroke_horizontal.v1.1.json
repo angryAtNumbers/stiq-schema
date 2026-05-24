@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "2026-05-25",
+  "hoop": { "widthMm": 100, "heightMm": 100, "origin": "center" },
+  "elements": [
+    {
+      "type": "splineStroke",
+      "id": "stroke-horiz",
+      "label": "Horizontal stroke (golden v1.1 fixture)",
+      "centerline": [
+        [-40, 0],
+        [-20, 0],
+        [0, 0],
+        [20, 0],
+        [40, 0]
+      ],
+      "widthMm": 4.0,
+      "transform": { "xMm": 0, "yMm": 0, "rotationDeg": 0, "scaleX": 1, "scaleY": 1 },
+      "stitch": {
+        "threadColorHex": "#2E7D32",
+        "densityMm": 0.4,
+        "maxStitchMm": 7.0,
+        "minStitchMm": 0.5,
+        "pullCompMm": 0.2,
+        "pushCompMm": 0.0,
+        "underlay": false,
+        "underlayType": "none",
+        "underlayDensityMm": 2.0,
+        "trimAfter": false
+      }
+    }
+  ]
+}

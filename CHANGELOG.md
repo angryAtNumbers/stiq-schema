@@ -2,6 +2,17 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and semver per the rules in `README.md` §Versioning.
 
+## [1.1.0] — 2026-05-25
+
+### Added
+- `schema/design.v1.1.json` — additive superset of v1.0. Introduces `SplineStrokeElement`, a satin-style stroke band along a centerline (`type: "splineStroke"`, `centerline: [[xMm, yMm]…]`, `widthMm`). The engine extracts ±widthMm/2 rails from the centerline and runs them through the same `emit_satin_column` emitter used by `SatinElement`. Replaces the editor's client-side spline-stroke generator under Phase C of the satin unification. v1.0 documents continue to validate unchanged.
+- Fixture `fixtures/spline_stroke_horizontal.v1.1.json` exercising the new element.
+- Codegen now reads `design.v1.1.json` as the source of truth. The generated TS + Pydantic types are a strict superset of the v1.0 surface, so existing consumers stay compile-clean.
+
+### Notes
+- Per README §Versioning, edits to `design.v1.json` are blocked by CI; new element types land in `design.v1.N.json` files. v1.1 is the first such bump.
+- v1.0 fixtures are routed to `design.v1.json` for validation; v1.1+ fixtures use the matching schema. The TS fixture-validator picks the schema from the filename suffix.
+
 ## [1.0.2] — 2026-05-25
 
 ### Added

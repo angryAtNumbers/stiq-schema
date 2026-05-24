@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stiq.dev/schema/design.v1.1.json",
+  "title": "StiqDesign",
+  "description": "Stiq design document v1.1 — additive superset of v1.0. Adds SplineStrokeElement (running-stitch and satin-band along a centerline). All v1.0 documents validate against v1.1 unchanged. See README §Versioning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "hoop", "elements"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Dated snapshot the document was written against, e.g. '2026-05-25'. Engines accept any version within their supported window (typically the last 12 months) and migrate older docs at the API boundary. Distinct from the package semver — package versions govern the codegen surface, doc versions govern the wire format.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "hoop": { "$ref": "#/$defs/Hoop" },
+    "elements": {
+      "type": "array",
+      "description": "Ordered list of design elements. Stitch order follows array order (top-of-list = sewn first).",
+      "items": { "$ref": "#/$defs/Element" }
+    }
+  },
+  "$defs": {
+    "Hoop": {
+      "title": "Hoop",
+      "description": "Embroidery hoop dimensions. Origin is the hoop center (0,0).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["widthMm", "heightMm"],
+      "properties": {
+        "widthMm": {
+          "type": "number",
+          "description": "Hoop width in millimetres.",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "heightMm": {
+          "type": "number",
+          "description": "Hoop height in millimetres.",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "origin": {
+          "type": "string",
+          "description": "Origin convention. v1 only supports center-origin (0,0 = hoop center).",
+          "enum": ["center"],
+          "default": "center"
+        }
+      }
+    },
+    "Transform": {
+      "title": "Transform",
+      "description": "Element transform applied after geometry is defined in its local frame. Order: scale, then rotation around (0,0), then translation.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "xMm": { "type": "number", "default": 0, "description": "Translation along X in mm." },
+        "yMm": { "type": "number", "default": 0, "description": "Translation along Y in mm." },
+        "rotationDeg": { "type": "number", "default": 0, "description": "Rotation around origin in degrees." },
+        "scaleX": { "type": "number", "default": 1, "minimum": 0.01, "description": "Scale factor along X. 1.0 = identity." },
+        "scaleY": { "type": "number", "default": 1, "minimum": 0.01, "description": "Scale factor along Y." }
+      }
+    },
+    "ThreadIdentity": {
+      "title": "ThreadIdentity",
+      "description": "Catalog identity for the thread. When present, the engine's PES writer uses the exact catalog entry instead of nearest-by-hex snapping. Hex remains authoritative for rendering.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "brand": { "type": "string", "description": "Thread brand, e.g. 'Madeira', 'Brother'." },
+        "catalogNumber": { "type": "string", "description": "Brand's catalog identifier for the specific colour." }
+      }
+    },
+    "Element": {
+      "description": "A design element. Discriminated by `type`. v1.1 adds SplineStrokeElement on top of v1's SatinElement.",
+      "oneOf": [
+        { "$ref": "#/$defs/SatinElement" },
+        { "$ref": "#/$defs/SplineStrokeElement" }
+      ],
+      "discriminator": { "propertyName": "type" }
+    },
+    "SatinElement": {
+      "title": "SatinElement",
+      "description": "A satin column defined by two parallel rails (and optional rungs that override the engine's auto-pairing). Both rails are point lists in world-space mm, sampled the same direction.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id", "rails", "stitch"],
+      "properties": {
+        "type": { "const": "satin", "description": "Discriminator." },
+        "id": {
+          "type": "string",
+          "description": "Stable element id (kebab/snake case, 1-64 chars).",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "label": { "type": "string", "description": "Optional human-readable label shown in the editor's Layers panel." },
+        "rails": {
+          "type": "array",
+          "description": "Exactly two rails. Each rail is a polyline of [xMm, yMm] points.",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "description": "[xMm, yMm].",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "rungs": {
+          "type": "array",
+          "description": "Optional explicit rungs (pairs of points joining the rails). When present, override the engine's automatic pairing.",
+          "items": {
+            "type": "array",
+            "description": "Two points [[xMm, yMm], [xMm, yMm]] defining one rung.",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "transform": { "$ref": "#/$defs/Transform" },
+        "stitch": { "$ref": "#/$defs/SatinStitchSettings" }
+      }
+    },
+    "SplineStrokeElement": {
+      "title": "SplineStrokeElement",
+      "description": "A satin-style stroke band along a centerline. The engine extracts ±widthMm/2 rails from the centerline, then runs the same satin emitter used by SatinElement and border satin. Replaces the editor's client-side spline-stroke generator (lib/satin-gen.ts) under Phase C of the satin unification.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id", "centerline", "widthMm", "stitch"],
+      "properties": {
+        "type": { "const": "splineStroke", "description": "Discriminator." },
+        "id": {
+          "type": "string",
+          "description": "Stable element id (kebab/snake case, 1-64 chars).",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "label": { "type": "string", "description": "Optional human-readable label shown in the editor's Layers panel." },
+        "centerline": {
+          "type": "array",
+          "description": "Ordered polyline of [xMm, yMm] points defining the stroke's centerline in world-space mm. The engine offsets ±widthMm/2 perpendicular to the local tangent to derive the two rails.",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" }
+          }
+        },
+        "widthMm": {
+          "type": "number",
+          "description": "Total band width in mm — the distance between the two derived rails. Half is offset to each side of the centerline.",
+          "minimum": 0.5,
+          "maximum": 20.0
+        },
+        "transform": { "$ref": "#/$defs/Transform" },
+        "stitch": { "$ref": "#/$defs/SatinStitchSettings" }
+      }
+    },
+    "SatinStitchSettings": {
+      "title": "SatinStitchSettings",
+      "description": "Stitch settings specific to satin columns. Defaults match stitch-defaults.json (the legacy parity fixture) so v1 imports of pre-spine docs are loss-free.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["threadColorHex"],
+      "properties": {
+        "threadColorHex": {
+          "type": "string",
+          "description": "Thread colour as #RRGGBB.",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "thread": { "$ref": "#/$defs/ThreadIdentity" },
+        "densityMm": {
+          "type": "number",
+          "description": "Row spacing in mm.",
+          "default": 0.4,
+          "minimum": 0.1,
+          "maximum": 2.0
+        },
+        "densityAuto": {
+          "type": "boolean",
+          "description": "When true, scale density by column width (sqrt of width / 4mm reference).",
+          "default": false
+        },
+        "maxStitchMm": {
+          "type": "number",
+          "description": "Maximum single stitch length in mm. Cap matches Brother PE700 acceptance.",
+          "default": 7.0,
+          "minimum": 1.0,
+          "maximum": 12.0
+        },
+        "minStitchMm": {
+          "type": "number",
+          "description": "Minimum single stitch length in mm. Below this the engine merges.",
+          "default": 0.5,
+          "minimum": 0.1,
+          "maximum": 5.0
+        },
+        "pullCompMm": {
+          "type": "number",
+          "description": "Perpendicular expansion in mm to offset thread-tension shrinkage.",
+          "default": 0.2,
+          "minimum": 0,
+          "maximum": 2.0
+        },
+        "pushCompMm": {
+          "type": "number",
+          "description": "Parallel shortening in mm at column ends. 0 = engine auto-computes.",
+          "default": 0.0,
+          "minimum": 0,
+          "maximum": 1.5
+        },
+        "underlay": {
+          "type": "boolean",
+          "description": "Whether to generate underlay stitches before the satin pass.",
+          "default": true
+        },
+        "underlayType": {
+          "type": "string",
+          "description": "Underlay strategy.",
+          "enum": ["none", "center_run", "edge_run", "zigzag", "double_zigzag"],
+          "default": "center_run"
+        },
+        "underlayDensityMm": {
+          "type": "number",
+          "description": "Underlay row spacing in mm.",
+          "default": 2.0,
+          "minimum": 0.5,
+          "maximum": 20
+        },
+        "trimAfter": {
+          "type": "boolean",
+          "description": "Force a trim after this element finishes sewing.",
+          "default": false
+        }
+      }
+    }
+  }
+}
