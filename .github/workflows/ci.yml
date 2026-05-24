@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: codegen freshness
+        run: |
+          npm run codegen:ts
+          git diff --exit-code -- src/ts/ || (echo "::error::Generated TS is stale — run npm run codegen:ts and commit" && exit 1)
+      - name: validate fixtures
+        run: node --test tests/ts/validate-fixtures.test.mjs
+      - name: parity (schema → TS)
+        run: node --test tests/ts/parity.test.mjs
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: install codegen + runtime deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install 'datamodel-code-generator>=0.25.6' pytest 'pydantic>=2.6,<3'
+      - name: codegen freshness
+        run: |
+          python codegen/py.py
+          git diff --exit-code -- src/py/ || (echo "::error::Generated Python is stale — run python codegen/py.py and commit" && exit 1)
+      - name: install generated package locally
+        run: pip install -e .
+      - name: validate fixtures
+        run: pytest tests/py/ -v
+
+  frozen-v1-guard:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: prevent edits to design.v1.json
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^schema/design\.v1\.json$'; then
+            echo "::error::schema/design.v1.json is frozen — additive evolution must land in design.v1.N.json (minor) or design.v2.json (major). See README §Versioning."
+            exit 1
+          fi

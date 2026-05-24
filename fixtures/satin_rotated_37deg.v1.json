@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "2026-05-25",
+  "hoop": {
+    "widthMm": 100,
+    "heightMm": 100,
+    "origin": "center"
+  },
+  "elements": [
+    {
+      "type": "satin",
+      "id": "satin-rot-37",
+      "label": "Golden — rotated satin",
+      "rails": [
+        [
+          [-20, -2.5],
+          [-10, -2.5],
+          [0, -2.5],
+          [10, -2.5],
+          [20, -2.5]
+        ],
+        [
+          [-20, 2.5],
+          [-10, 2.5],
+          [0, 2.5],
+          [10, 2.5],
+          [20, 2.5]
+        ]
+      ],
+      "transform": {
+        "xMm": 0,
+        "yMm": 0,
+        "rotationDeg": 37,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "stitch": {
+        "threadColorHex": "#D4351C",
+        "densityMm": 0.4,
+        "maxStitchMm": 7.0,
+        "minStitchMm": 0.5,
+        "pullCompMm": 0.2,
+        "pushCompMm": 0.0,
+        "underlay": true,
+        "underlayType": "center_run",
+        "underlayDensityMm": 2.0,
+        "trimAfter": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "stiq-design-schema",
+  "version": "1.0.0",
+  "description": "Stiq design document — JSON Schema source with generated TypeScript types. The contract between the Stiq editor and the Stiq stitch engine.",
+  "type": "module",
+  "main": "src/ts/index.js",
+  "types": "src/ts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/ts/index.d.ts",
+      "default": "./src/ts/index.js"
+    },
+    "./schema": "./schema/design.v1.json",
+    "./fixtures/*": "./fixtures/*"
+  },
+  "files": [
+    "schema/",
+    "src/ts/",
+    "fixtures/",
+    "README.md"
+  ],
+  "scripts": {
+    "codegen:ts": "node codegen/ts.mjs",
+    "codegen:py": "python codegen/py.py",
+    "codegen": "npm run codegen:ts && npm run codegen:py",
+    "check:fresh": "npm run codegen && git diff --exit-code -- src/",
+    "test": "node --test tests/ts/*.test.mjs",
+    "validate:fixtures": "node tests/ts/validate-fixtures.mjs"
+  },
+  "keywords": [
+    "stiq",
+    "embroidery",
+    "json-schema",
+    "design",
+    "contract"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angryAtNumbers/stiq-schema.git"
+  },
+  "homepage": "https://github.com/angryAtNumbers/stiq-schema#readme",
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "json-schema-to-typescript": "^15.0.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
