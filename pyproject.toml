@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stiq-design-schema"
-version = "1.0.1"
+version = "1.0.2"
 description = "Stiq design document — JSON Schema source with generated Pydantic models. The contract between the Stiq editor and the Stiq stitch engine."
 readme = "README.md"
 license = { text = "MIT" }
@@ -42,6 +42,14 @@ Issues = "https://github.com/angryAtNumbers/stiq-schema/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/py/stiq_design_schema"]
+
+# Ship the JSON Schema and golden fixtures inside the wheel so
+# consumers can read them via importlib.resources without needing
+# the source tree. Mirror what package.json exposes via its
+# `exports` map for the npm side.
+[tool.hatch.build.targets.wheel.force-include]
+"schema/design.v1.json" = "stiq_design_schema/schema/design.v1.json"
+"fixtures" = "stiq_design_schema/fixtures"
 
 [tool.hatch.build.targets.sdist]
 include = [

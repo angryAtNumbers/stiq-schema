@@ -2,6 +2,11 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and semver per the rules in `README.md` §Versioning.
 
+## [1.0.2] — 2026-05-25
+
+### Added
+- Python wheel now ships `schema/design.v1.json` and the `fixtures/` directory via hatch `force-include`. Consumers can load them via `importlib.resources.files('stiq_design_schema')` instead of needing the source tree. Mirrors what the npm package already exposes via its `exports` map.
+
 ## [1.0.1] — 2026-05-25
 
 ### Fixed
