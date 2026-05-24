@@ -1,6 +1,6 @@
 {
   "name": "stiq-design-schema",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Stiq design document — JSON Schema source with generated TypeScript types. The contract between the Stiq editor and the Stiq stitch engine.",
   "type": "module",
   "main": "src/ts/index.js",
@@ -11,6 +11,8 @@
       "default": "./src/ts/index.js"
     },
     "./schema": "./schema/design.v1.json",
+    "./schema/design.v1.json": "./schema/design.v1.json",
+    "./package.json": "./package.json",
     "./fixtures/*": "./fixtures/*"
   },
   "files": [

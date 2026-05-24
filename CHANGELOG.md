@@ -2,6 +2,11 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and semver per the rules in `README.md` §Versioning.
 
+## [1.0.1] — 2026-05-25
+
+### Fixed
+- `exports` map now explicitly lists `./package.json` and the schema file path so consumers can `import pkg from 'stiq-design-schema/package.json'` (needed by the frontend's boot-time skew check). No schema or codegen changes.
+
 ## [1.0.0] — 2026-05-25
 
 ### Added

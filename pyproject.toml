@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stiq-design-schema"
-version = "1.0.0"
+version = "1.0.1"
 description = "Stiq design document — JSON Schema source with generated Pydantic models. The contract between the Stiq editor and the Stiq stitch engine."
 readme = "README.md"
 license = { text = "MIT" }
