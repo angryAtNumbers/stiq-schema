@@ -2,6 +2,17 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and semver per the rules in `README.md` §Versioning.
 
+## [1.2.0] — 2026-05-24
+
+### Added
+- `schema/design.v1.2.json` — additive superset of v1.1. `SplineStrokeElement` gains a `strokeType` discriminator field (one of `running`, `bean`, `triple-run`, `satin-band`, `chain`, `track`) and an optional `stitchLengthMm` for the line-stitch variants. Default `strokeType` is `'satin-band'`, so all v1.1 documents validate against v1.2 unchanged. Closes audit B1: the five non-satin spline strokes can now go through the engine via the schema, not client-side.
+- Fixture `fixtures/spline_running_horizontal.v1.2.json` exercising the new `running` stroke type.
+- Codegen now reads `design.v1.2.json`; generated TS + Pydantic types are a strict superset of v1.1.
+
+### Notes
+- `widthMm` is documented as IGNORED for the line-stitch types (`running`, `bean`, `triple-run`). The schema doesn't enforce this — keeping the field required gives v1.1 docs a stable migration path.
+- Engine-side execution: only `'satin-band'` was wired in v1.1's `_design_intent_spline_stroke_to_legacy_dict`. The other five are wired in this minor's matching engine release (see stiq-engine `requirements.txt` pin bump to `v1.2.0`).
+
 ## [1.1.0] — 2026-05-25
 
 ### Added

@@ -34,10 +34,11 @@ async function loadSchema(name) {
 }
 
 function schemaForFixture(fname) {
-  // .v1.1.json → design.v1.1.json. Matches before the looser .v1 case.
+  // Most-specific suffix wins (longer match before shorter).
+  if (/\.v1\.2\.json$/.test(fname)) return 'design.v1.2.json'
   if (/\.v1\.1\.json$/.test(fname)) return 'design.v1.1.json'
   if (/\.v1\.json$/.test(fname))    return 'design.v1.json'
-  return 'design.v1.1.json'  // unversioned → latest
+  return 'design.v1.2.json'  // unversioned → latest
 }
 
 const fixtureFiles = (await readdir(FIXTURE_DIR)).filter(f => f.endsWith('.json'))
